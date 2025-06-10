@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
+
+    // Supabase setup
+    const SUPABASE_URL = 'https://oxchklbakygkkyjmehlb.supabase.co'
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94Y2hrbGJha3lna2t5am1laGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk1NjgwOTksImV4cCI6MjA2NTE0NDA5OX0.c1lp5cki7F-Pf4ZCpnyi1Jg3kZCbf2B6IzySTVE9vKk'
+  
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
   document.body.classList.add('fade-in');
   const emailForm = document.querySelector('.email-entry-section');
   const emailInput = document.getElementById('user-email');
@@ -53,20 +60,31 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Handle email submission
-  if (emailForm) {
-    emailForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      if (emailInput.value.trim() !== '') {
-        emailSuccess.textContent = 'Thanks! We\'ll be in touch soon.';
-        emailSuccess.style.display = 'block';
-        emailInput.value = '';
-        setTimeout(() => {
-          emailSuccess.style.display = 'none';
-          emailForm.classList.remove('active');
-        }, 3000);
-      }
-    });
+  emailForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const email = emailInput.value.trim();
+  if (email === '') return;
+
+  // Send to Supabase
+  const { data, error } = await supabase
+    .from('subscribers')
+    .insert([{ email }]);
+
+  if (error) {
+    emailSuccess.textContent = 'Something went wrong. Try again.';
+    emailSuccess.style.color = 'red';
+    emailSuccess.style.display = 'block';
+  } else {
+    emailSuccess.textContent = 'Thanks! We\'ll be in touch soon.';
+    emailSuccess.style.color = '';
+    emailSuccess.style.display = 'block';
+    emailInput.value = '';
+    setTimeout(() => {
+      emailSuccess.style.display = 'none';
+      emailForm.classList.remove('active');
+    }, 3000);
   }
+});
 
   // Theme Switcher
   function setTheme(theme) {
